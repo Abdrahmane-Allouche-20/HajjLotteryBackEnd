@@ -1,0 +1,11 @@
+const router=require('express').Router()
+const {login,register,getAllUserProfile,deleteUser}=require('../controllers/users')
+const {itsAdmin}=require('../middleware/auth')
+const validateRegister = require('../middleware/validateRegister')
+const validateLogin =require('../middleware/validateLogin')
+const validateMongoId=require('../middleware/validId')
+router.route('/login').post(validateLogin,login)
+router.route('/register').post(validateRegister,register)
+router.route('/allUsers').get(itsAdmin,getAllUserProfile)
+router.route('/deleteuser/:id').delete(validateMongoId,itsAdmin,deleteUser)
+module.exports=router
