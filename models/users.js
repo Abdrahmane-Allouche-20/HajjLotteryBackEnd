@@ -8,6 +8,13 @@ const UserSchema= new mongoose.Schema({
         required:[true,'please provide user name'],
         
     },
+    profileImage:{
+      type:Object,
+      default:{
+        url:'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png',
+        publicId:null,
+      }
+    },
     isAdmine:{
       type:Boolean,
       default:false
@@ -38,7 +45,7 @@ UserSchema.methods.createToken=function(){
     throw new Error('JWT_SECRET is not defined in the environment variables.');
   }
   return (
-    jwt.sign({userId:this._id,username:this.username,email:this.email,isAdmine:this.isAdmine},process.env.JWT_SCRT, { expiresIn: '30d' })
+    jwt.sign({userId:this._id,username:this.username,email:this.email,isAdmine:this.isAdmine,profileImage:this.profileImage},process.env.JWT_SCRT, { expiresIn: '30d' })
   )
 }
 UserSchema.methods.comparePassword=async function(password){

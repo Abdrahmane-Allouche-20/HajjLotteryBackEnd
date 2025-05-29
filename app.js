@@ -7,6 +7,7 @@ const ConnectDB = require('./database/connect')
 const userRoute=require('./routes/users')
 const HajjRoute=require('./routes/Hajj')
 app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
 app.use(Cors())
 app.use('/api/v1/user',userRoute) 
 app.use('/api/v1/hajj',HajjRoute) 

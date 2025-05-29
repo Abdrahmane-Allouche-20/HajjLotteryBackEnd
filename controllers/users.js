@@ -1,5 +1,9 @@
 const User =require('../models/users')
 const { StatusCodes } = require('http-status-codes');
+const path=require('path')
+const fs =require('fs')
+const {uploadImage,removeImage}=require('../utils/cloudinary')
+
 const login=async(req,res)=>{
   try {
     const {email,password}=req.body
@@ -83,5 +87,76 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const uploadProfilePicture = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image added' });
+    }
+    
+    const imagePath = path.join(__dirname, '../images', req.file.filename);
 
-module.exports={login,register,getAllUserProfile,deleteUser}
+    // Upload image to cloudinary or your cloud service
+    const result = await uploadImage(imagePath);
+
+    // Find user in DB
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Remove old image if exists
+    if (user.profileImage?.publicId) {
+      await removeImage(user.profileImage.publicId);
+    }
+
+    // Update user profile image
+    user.profileImage = {
+      publicId: result.public_id,
+      url: result.secure_url,
+    };
+
+    // Save user
+    const updatedUser = await user.save();
+
+    // Delete local uploaded file
+    fs.unlinkSync(imagePath);
+
+    // Remove password field before sending response
+    const { password, ...safeUser } = updatedUser._doc;
+
+    // Respond with updated user (without password)
+    res.status(200).json({
+      message: 'Profile picture uploaded successfully',
+      user: safeUser,
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+const deleteAccount=async(req,res)=>{
+
+  const { id } = req.params;
+
+  try {
+    const deletedUser = await User.findByIdAndDelete(id);
+
+    if (!deletedUser) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+    }
+
+    return res.status(StatusCodes.OK).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error during deleting user:', error);
+
+    if (error.name === 'ValidationError') {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation error occurred' });
+    }
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server Error' });
+  }
+}
+
+
+
+module.exports={deleteAccount,uploadProfilePicture,login,register,getAllUserProfile,deleteUser}

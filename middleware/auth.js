@@ -13,7 +13,7 @@ const token=authHeader.split(' ')[1].trim()
 
 try {
   const payload = jwt.verify(token,process.env.JWT_SCRT)
-  req.user={userId:payload.userId,username:payload.username,email:payload.email,isAdmine:payload.isAdmine}
+  req.user={userId:payload.userId,username:payload.username,email:payload.email,isAdmine:payload.isAdmine,profileImage:payload.profileImage}
   next()
 } catch (error) {
     return res.status(StatusCodes.UNAUTHORIZED).json({error:error})

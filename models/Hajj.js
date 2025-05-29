@@ -35,10 +35,11 @@ const HajjSchema = new mongoose.Schema({
     email: {
         type: String
     },
-    demandeDe: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }
+     demandeDe: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', 
+    required: true,
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Hajj', HajjSchema);
