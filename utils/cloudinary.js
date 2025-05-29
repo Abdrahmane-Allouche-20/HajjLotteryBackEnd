@@ -17,6 +17,16 @@ const uploadImage = async (filePath) => {
     }
 };
 
+// Add this function for buffer uploads (memory storage)
+const uploadImageBuffer = (buffer) => {
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+        }).end(buffer);
+    });
+};
+
 const removeImage = async (publicId) => {
     try {
         const result = await cloudinary.uploader.destroy(publicId);
@@ -26,4 +36,4 @@ const removeImage = async (publicId) => {
     }
 };
 
-module.exports = { uploadImage, removeImage };
+module.exports = { uploadImage, uploadImageBuffer, removeImage };

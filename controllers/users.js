@@ -1,8 +1,7 @@
 const User =require('../models/users')
 const { StatusCodes } = require('http-status-codes');
-const path=require('path')
-const fs =require('fs')
-const {uploadImage,removeImage}=require('../utils/cloudinary')
+
+const { uploadImageBuffer, removeImage } = require('../utils/cloudinary');
 
 const login=async(req,res)=>{
   try {
@@ -92,11 +91,9 @@ const uploadProfilePicture = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No image added' });
     }
-    
-    const imagePath = path.join(__dirname, '../images', req.file.filename);
 
-    // Upload image to cloudinary or your cloud service
-    const result = await uploadImage(imagePath);
+    // Upload directly from buffer (no local file system)
+    const result = await uploadImageBuffer(req.file.buffer);
 
     // Find user in DB
     const user = await User.findById(req.user.userId);
@@ -117,9 +114,6 @@ const uploadProfilePicture = async (req, res) => {
 
     // Save user
     const updatedUser = await user.save();
-
-    // Delete local uploaded file
-    fs.unlinkSync(imagePath);
 
     // Remove password field before sending response
     const { password, ...safeUser } = updatedUser._doc;
